@@ -1,0 +1,4 @@
+interface:
+  display_name: "Kernel Optimization Review"
+  short_description: "CUDA, HIP, Triton, and TileLang kernel checks"
+  default_prompt: "Use $kernel-review to review this GPU kernel for performance and correctness."

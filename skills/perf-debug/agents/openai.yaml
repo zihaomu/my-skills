@@ -1,0 +1,4 @@
+interface:
+  display_name: "HPC Perf Investigation"
+  short_description: "Evidence-first GPU and LLM perf triage"
+  default_prompt: "Use $perf-debug to investigate this performance regression with profiling evidence."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "AMD ROCm HIP"
+  short_description: "ROCm, HIP, and AMD backend contribution guide"
+  default_prompt: "Use $rocm-hip to review this AMD ROCm/HIP change for portability and upstream readiness."

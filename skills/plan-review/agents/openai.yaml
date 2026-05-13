@@ -1,0 +1,6 @@
+interface:
+  display_name: "Engineering Plan Review"
+  short_description: "Architecture and test review before coding"
+  default_prompt: "Use $plan-review to review this implementation plan before coding starts."
+policy:
+  allow_implicit_invocation: false

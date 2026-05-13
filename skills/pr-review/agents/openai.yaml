@@ -1,0 +1,6 @@
+interface:
+  display_name: "Pre-Landing Review"
+  short_description: "Final diff review before merge"
+  default_prompt: "Use $pr-review to review this diff before it lands."
+policy:
+  allow_implicit_invocation: false

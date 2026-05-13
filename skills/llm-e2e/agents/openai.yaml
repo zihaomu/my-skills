@@ -1,0 +1,4 @@
+interface:
+  display_name: "LLM Serving E2E"
+  short_description: "vLLM/SGLang serving performance analysis"
+  default_prompt: "Use $llm-e2e to analyze this LLM serving performance issue end to end."

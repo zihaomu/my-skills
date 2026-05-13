@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+TARGET="$CODEX_HOME/skills"
+MODE="symlink"
+
+if [[ "${1:-}" == "--copy" ]]; then
+  MODE="copy"
+elif [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+  echo "Usage: scripts/install [--copy]"
+  echo "Default: symlink skills into \${CODEX_HOME:-\$HOME/.codex}/skills"
+  exit 0
+fi
+
+mkdir -p "$TARGET"
+
+for skill_dir in "$ROOT"/skills/*; do
+  [[ -d "$skill_dir" ]] || continue
+  name="$(basename "$skill_dir")"
+  [[ "$name" == .* || "$name" == _* ]] && continue
+  [[ -f "$skill_dir/SKILL.md" ]] || continue
+
+  dest="$TARGET/$name"
+  if [[ "$MODE" == "copy" ]]; then
+    rm -rf "$dest"
+    cp -R "$skill_dir" "$dest"
+  else
+    rm -rf "$dest"
+    ln -s "$skill_dir" "$dest"
+  fi
+  echo "installed $name -> $dest"
+done
+
+echo "Done. Restart Codex if it was already running."
+

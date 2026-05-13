@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SKILLS = ROOT / "skills"
+NAME_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
+
+
+def parse_frontmatter(path: Path) -> tuple[dict[str, str], list[str]]:
+    text = path.read_text(encoding="utf-8")
+    errors: list[str] = []
+    if not text.startswith("---\n"):
+      return {}, ["missing YAML frontmatter"]
+    end = text.find("\n---\n", 4)
+    if end == -1:
+      return {}, ["unterminated YAML frontmatter"]
+    raw = text[4:end].splitlines()
+    data: dict[str, str] = {}
+    current = None
+    for line in raw:
+      if not line.strip():
+        continue
+      if line.startswith(" ") or line.startswith("\t"):
+        if current:
+          data[current] = data.get(current, "") + " " + line.strip()
+        continue
+      if ":" not in line:
+        errors.append(f"invalid frontmatter line: {line}")
+        continue
+      key, value = line.split(":", 1)
+      current = key.strip()
+      data[current] = value.strip().strip('"').strip("'")
+    return data, errors
+
+
+def referenced_files(skill_md: Path) -> list[str]:
+    text = skill_md.read_text(encoding="utf-8")
+    refs = re.findall(r"\]\((references/[^)]+)\)", text)
+    return [r for r in refs if not r.startswith("http")]
+
+
+def main() -> int:
+    errors: list[str] = []
+    if not SKILLS.is_dir():
+        errors.append("missing skills/ directory")
+    for skill in sorted(SKILLS.iterdir()):
+        if not skill.is_dir() or skill.name.startswith(".") or skill.name.startswith("_"):
+            continue
+        skill_md = skill / "SKILL.md"
+        if not skill_md.exists():
+            errors.append(f"{skill.name}: missing SKILL.md")
+            continue
+        data, fm_errors = parse_frontmatter(skill_md)
+        for err in fm_errors:
+            errors.append(f"{skill.name}: {err}")
+        name = data.get("name", "")
+        desc = data.get("description", "")
+        if name != skill.name:
+            errors.append(f"{skill.name}: frontmatter name must match folder name")
+        if not NAME_RE.match(name):
+            errors.append(f"{skill.name}: invalid skill name")
+        if not desc:
+            errors.append(f"{skill.name}: missing description")
+        if len(desc) > 1024:
+            errors.append(f"{skill.name}: description exceeds 1024 characters")
+        if not (skill / "agents" / "openai.yaml").exists():
+            errors.append(f"{skill.name}: missing agents/openai.yaml")
+        for ref in referenced_files(skill_md):
+            if not (skill / ref).exists():
+                errors.append(f"{skill.name}: missing referenced file {ref}")
+
+    if errors:
+        for err in errors:
+            print(f"ERROR: {err}", file=sys.stderr)
+        return 1
+    print("OK: skills validated")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+

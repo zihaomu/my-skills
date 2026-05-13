@@ -1,0 +1,4 @@
+interface:
+  display_name: "Knowledge Curator"
+  short_description: "Promote durable HPC/LLM knowledge into skills"
+  default_prompt: "Use $curator to capture and promote these learnings into my personal skills repository."
